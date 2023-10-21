@@ -24,9 +24,31 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+app.get("/api/:date?", (req,res,next) => {
+  if(req.params.date){
+    if ((/[0-9]{13}/).test(req.params.date)) {
+      req.time = new Date(Number(req.params.date)).toUTCString();
+      req.unix = Number(req.params.date);
+    } else {
+      req.time = new Date(req.params.date).toUTCString();
+      req.unix = new Date(req.params.date).valueOf();
+    }
+  } else {
+    req.unix = Date.now().valueOf();
+    req.time = (new Date()).toUTCString();
+  }
+  next();
+}, (req,res) => {
+  if (req.unix){
+    res.json({unix: req.unix, utc: req.time});
+  } else {
+    res.json({error: req.time})
+  }
+});
+
 
 
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
+var listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
